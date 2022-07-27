@@ -28,9 +28,7 @@ const Home: NextPage = () => {
       </Head>
 
       <View>
-        <Hero title="COMPUTER">
-          <h4>blog</h4>
-        </Hero>
+        <Hero title="COMPUTER">{/* <h4>blog</h4> */}</Hero>
       </View>
     </div>
   )
