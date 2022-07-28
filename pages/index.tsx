@@ -1,7 +1,11 @@
 import type { NextPage } from "next"
 import Head from "next/head"
 import styled from "@emotion/styled"
+import { useControls } from "leva"
 import { Hero } from "../components/Hero"
+
+// TODO: multiplayer blog, see other users browsing the site
+// TODO: character builder
 
 const View = styled.main`
   position: relative;
@@ -21,6 +25,10 @@ const SubHeading = styled.p`
 `
 
 const Home: NextPage = () => {
+  const { title } = useControls({
+    title: "COMPUTER BLOG",
+  })
+
   return (
     <div>
       <Head>
@@ -28,7 +36,7 @@ const Home: NextPage = () => {
       </Head>
 
       <View>
-        <Hero title="COMPUTER">{/* <h4>blog</h4> */}</Hero>
+        <Hero title={title}>{/* <h4>blog</h4> */}</Hero>
       </View>
     </div>
   )

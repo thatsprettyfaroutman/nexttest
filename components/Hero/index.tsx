@@ -13,10 +13,6 @@ import { useControls } from "leva"
 
 extend({ SSAOPass, UnrealBloomPass })
 
-const BOX_TEXT_COLOR = 0xffffff
-const BOX_COLOR_A = "#f0f"
-const BOX_COLOR_B = "#08f"
-
 const StyledHero = styled.div`
   position: relative;
   height: 100vh;
@@ -34,7 +30,7 @@ const tempObject = new THREE.Object3D()
 const tempColor = new THREE.Color()
 const origin = new THREE.Vector3(0, 0, 0)
 
-const BLOB_DEFAULT_POSITION = new THREE.Vector2(-2, -1.3)
+const BLOB_DEFAULT_POSITION = new THREE.Vector2(0, 1)
 const BLOB = {
   position: BLOB_DEFAULT_POSITION.clone(),
   velocity: new THREE.Vector2(0, 0),
@@ -50,10 +46,14 @@ const Boxes = ({
   fg,
   bgA,
   bgB,
+  blobMode,
   blobMagic,
   blobSize,
+  curvature,
+  coneness,
+  textScale,
 }: {
-  title: string
+  title?: string
   mouseRef: MutableRefObject<undefined | THREE.Vector2>
   cols: number
   rows: number
@@ -62,13 +62,17 @@ const Boxes = ({
   fg: string
   bgA: string
   bgB: string
+  blobMode: string
   blobMagic: number
   blobSize: number
+  curvature: number
+  coneness: number
+  textScale: number
 }) => {
   const BOX_COUNT = (BOX_COLS + 1) * (BOX_ROWS + 1)
 
   const data = useMemo(() => {
-    const TEXT = getCharacters(title)
+    const TEXT = getCharacters(title || " ")
     const TEXT_ROWS = TEXT.reduce((rows: number[][], character, i) => {
       const characterRows = splitEvery(character.length / 5, character)
       characterRows.forEach((characterRow, row) => {
@@ -117,12 +121,12 @@ const Boxes = ({
           //   ? 0xff00ff
           //   :
           isInCharacter ? chroma(fg).hex() : color,
-        scale: isInCharacter ? 1 : 1,
+        scale: isInCharacter ? textScale : 1,
       }
     })
 
     return data
-  }, [title, BOX_COLS, BOX_ROWS, BOX_SIZE, BOX_COUNT, BOX_GAP, fg, bgA, bgB])
+  }, [title, BOX_COLS, BOX_ROWS, BOX_COUNT, fg, bgA, bgB, textScale])
 
   // const [hovered, set] = useState()
   const colorArray = useMemo(
@@ -145,7 +149,7 @@ const Boxes = ({
     }
 
     const time = state.clock.getElapsedTime()
-    meshRef.current.rotation.x = 0 // Math.sin(time / 4)
+    meshRef.current.rotation.x = -0.2 // Math.sin(time / 4)
     meshRef.current.rotation.y = 0 // Math.sin(time / 2)
 
     if (mouseRef.current) {
@@ -164,6 +168,16 @@ const Boxes = ({
 
     BLOB.velocity.multiplyScalar(0.97)
 
+    // Tilt based on mouseRef
+    // if (mouseRef.current && meshRef.current) {
+    //   const distanceToMouse = mouseRef.current
+    //     .clone()
+    //     .sub(origin as unknown as THREE.Vector2)
+
+    //   meshRef.current.rotation.x = distanceToMouse.y * -0.1
+    //   meshRef.current.rotation.y = distanceToMouse.x * 0.01
+    // }
+
     let i = 0
     for (let ix = 0; ix < BOX_COLS + 1; ix++)
       for (let iy = 0; iy < BOX_ROWS + 1; iy++) {
@@ -172,19 +186,26 @@ const Boxes = ({
         const x = ix * BOX_GAP
         const z = 0
 
+        const hw = BOX_GAP * BOX_COLS * 0.5
+        const hh = BOX_GAP * BOX_ROWS * 0.5
+
+        const xp = (x - hw) / hw
+        const yp = y / hh / hh
+
         tempObject.position.set(
-          x - BOX_COLS * 0.5 * BOX_GAP,
-          y - BOX_ROWS * 0.5 * BOX_GAP,
+          x - hw,
+          y - hh,
           z //y * -0.5 //5 - z
         )
 
         tempObject.position.z =
-          tempObject.position.distanceTo(origin) * -0.06125
+          tempObject.position.distanceTo(origin) *
+          (curvature ? Math.abs(xp) * -curvature : 1) *
+          (coneness ? Math.abs(yp) * coneness : 1)
 
         // if (mouseRef.current) {
-        // const distanceToMouse = mouseRef.current.distanceTo(
-        //   tempObject.position as unknown as THREE.Vector2
-        // )
+        const blobDistanceToMouse =
+          mouseRef.current?.distanceTo(BLOB.position) || 1
 
         const distanceToBlob = BLOB.position.distanceTo(
           tempObject.position as unknown as THREE.Vector2
@@ -195,18 +216,28 @@ const Boxes = ({
 
         const zp =
           (distanceToBlob < blobSize ? blobSize - distanceToBlob : 0) / blobSize
-        tempObject.position.z -=
-          Math.sin(zp * (blobMagic ? id % blobMagic : 1)) *
-          (id % 2 === 0 ? -1 : 1)
 
-        // const mouseOffset = mouseRef.current.sub()
+        const blobMathFn = blobMode === "tan" ? Math.tan : Math.sin
+
+        let zplus = blobMathFn(zp * blobMagic) * -0.5
+
+        // if (zplus > 0) {
+        //   zplus *= -0.5
         // }
 
+        tempObject.position.z += zplus // (blobMagic ? id % blobMagic : 1)
+        //  *
+        // (id % 2 === 0 ? -1 : 1)
+
+        // tempObject.rotation.y =
+        //   Math.sin(x / 4.1 + time) +
+        //   Math.sin(y / 2.3 + time) +
+        //   Math.sin(z / 4 + time)
         tempObject.rotation.y =
-          Math.sin(x / 4.1 + time) +
-          Math.sin(y / 2.3 + time) +
-          Math.sin(z / 4 + time)
+          Math.sin(x / 4.1 + time) + Math.sin(y / 12.3 + time)
         tempObject.rotation.z = tempObject.rotation.y * 2
+
+        // tempObject.position.x += Math.tan(tempObject.position.x / 10 + time)
 
         // if (hovered !== prevRef.current) {
         //   ;(id === hovered
@@ -267,23 +298,72 @@ export const Hero: FC<{ title: string }> = ({
   children,
   ...restProps
 }) => {
-  const { cols, rows, size, gap, fg, bgA, bgB, blobMagic, blobSize } =
-    useControls({
-      cols: { value: 80, min: 1, max: 500 },
-      rows: { value: 60, min: 1, max: 500 },
-      gap: { value: 0.125 * 0.5, min: 0.0001, max: 1 },
-      size: { value: 0.1, min: 0.0001, max: 0.2, step: 0.001 },
-      fg: "#fff",
-      bgA: "#f0f",
-      bgB: "#00f",
-      blobMagic: { value: 5, min: 0, max: 50 },
-      blobSize: { value: 1, min: 0.001, max: 10 },
-    })
+  const {
+    cols,
+    rows,
+    size,
+    gap,
+    fg,
+    bgA,
+    bgB,
+    blobMode,
+    blobMagic,
+    blobSize,
+    curvature,
+    coneness,
+    textScale,
+  } = useControls({
+    cols: {
+      value: 150, // 105, // 90, // 80,
+      min: 1,
+      max: 500,
+    },
+    rows: {
+      value: 30, // 10, //25, // 60,
+      min: 1,
+      max: 500,
+    },
+    gap: {
+      value: 0.08, // 0.16, // 0.2, //0.125 * 0.5,
+      min: 0.0001,
+      max: 1,
+    },
+    size: {
+      value: 0.01, // 0.17, // 0.13, // 0.1,
+      min: 0.0001,
+      max: 0.2,
+      step: 0.001,
+    },
+    fg: "#fff",
+    bgA: "#f0f",
+    bgB: "#00f",
+    blobMode: {
+      options: ["sin", "tan"],
+    },
+    blobMagic: {
+      value: 27, // 6.5, // 6, // 5,
+      min: -50,
+      max: 50,
+    },
+    blobSize: {
+      value: 10, // 0.9, // 1.2, // 1,
+      min: 0.001,
+      max: 30,
+    },
+    curvature: { value: 0.01, min: -4, max: 4, step: 0.001 },
+    coneness: { value: 0, min: -10, max: 10, step: 0.001 },
+    textScale: {
+      value: 1.5,
+      min: 0.01,
+      max: 10,
+      step: 0.001,
+    },
+  })
 
   const mouseRef = useRef<undefined | THREE.Vector2>()
 
   const boxesWidth = cols * gap + size
-  const boxesHeight = cols * gap + size
+  const boxesHeight = rows * gap + size
 
   return (
     <StyledHero {...restProps}>
@@ -300,8 +380,12 @@ export const Hero: FC<{ title: string }> = ({
           fg={fg}
           bgA={bgA}
           bgB={bgB}
+          blobMode={blobMode}
           blobMagic={blobMagic}
           blobSize={blobSize}
+          curvature={curvature}
+          coneness={coneness}
+          textScale={textScale}
         />
         <MousePlane
           onChange={(pos) => {

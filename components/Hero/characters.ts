@@ -122,14 +122,19 @@ const CHARACTER = {
 }
 
 export const getCharacters = (str: string) =>
-  str.split("").map((key) => {
-    const char = CHARACTER[key as keyof typeof CHARACTER]
+  str
+    .toUpperCase()
+    .split("")
+    .map((key) => {
+      const char = CHARACTER[key as keyof typeof CHARACTER]
 
-    if (!char) {
-      throw new Error(
-        `getCharacters, character "${key}" not supported. Add it to CHARACTER.`
-      )
-    }
+      if (!char) {
+        console.error(
+          `getCharacters, character "${key}" not supported. Add it to CHARACTER.`
+        )
+        return
+      }
 
-    return char
-  })
+      return char
+    })
+    .filter(Boolean) as number[][]
