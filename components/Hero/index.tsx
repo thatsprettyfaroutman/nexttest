@@ -367,7 +367,12 @@ export const Hero: FC<{ title: string }> = ({
 
   return (
     <StyledHero {...restProps}>
-      <Canvas flat linear dpr={2}>
+      <Canvas
+        flat
+        linear
+        dpr={2}
+        // camera={{ fov: 10, position: [0, 0, 40] }}
+      >
         {/* <ambientLight /> */}
         {/* <pointLight position={[1, 1, -1]} /> */}
         <Boxes
