@@ -2,21 +2,44 @@
   "name": "project-template-next.js",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "postinstall": "zx ./scripts/pnpm-install.mjs",
+    "dev": "run-p dev:prettier-watch dev:next",
+    "dev:prettier-watch": "onchange \"./pages/**/*\" \"./components/**/*\" \"./public/**/*\" -- prettier --write --ignore-unknown {{changed}}",
+    "dev:next": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
-    "next": "12.0.9",
-    "react": "17.0.2",
-    "react-dom": "17.0.2"
+    "@babel/core": "7.18.9",
+    "@emotion/react": "11.9.3",
+    "@emotion/styled": "11.9.3",
+    "@react-three/drei": "9.17.3",
+    "@react-three/fiber": "8.2.1",
+    "chroma-js": "2.4.2",
+    "d3-ease": "3.0.1",
+    "lerp": "1.0.3",
+    "leva": "0.9.29",
+    "next": "~12.2.3",
+    "ramda": "0.28.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "three": "0.142.0",
+    "three-stdlib": "2.12.1"
   },
   "devDependencies": {
+    "@types/chroma-js": "2.1.4",
+    "@types/d3-ease": "3.0.0",
     "@types/node": "17.0.12",
+    "@types/ramda": "0.28.15",
     "@types/react": "17.0.38",
+    "@types/three": "0.142.0",
     "eslint": "8.7.0",
     "eslint-config-next": "12.0.9",
-    "typescript": "4.5.5"
+    "npm-run-all": "^4.1.5",
+    "onchange": "^7.1.0",
+    "prettier": "2.7.1",
+    "typescript": "4.5.5",
+    "zx": "7.0.7"
   }
 }
