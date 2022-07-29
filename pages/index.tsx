@@ -5,7 +5,10 @@ import { useControls } from "leva"
 import { Hero } from "../components/Hero"
 
 // TODO: multiplayer blog, see other users browsing the site
-// TODO: character builder
+// TODO: character builder that float near the cursor
+// TODO: make multiplayer cursors POOF-vanish when they enter links on the site
+// TODO: each internal link on the site has a counter or some indicator of how many people there are on that page currently
+// TODO: speech bubbles for characters
 
 const View = styled.main`
   position: relative;
