@@ -2,7 +2,6 @@
   "name": "project-template-next.js",
   "private": true,
   "scripts": {
-    "postinstall": "zx ./scripts/pnpm-install.mjs",
     "dev": "run-p dev:prettier-watch dev:next",
     "dev:prettier-watch": "onchange \"./pages/**/*\" \"./components/**/*\" \"./public/**/*\" -- prettier --write --ignore-unknown {{changed}}",
     "dev:next": "next dev",
