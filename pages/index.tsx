@@ -3,6 +3,7 @@ import Head from "next/head"
 import styled from "@emotion/styled"
 import { useControls } from "leva"
 import { Hero } from "../components/Hero"
+import { Cursors } from "../components/Cursors"
 
 // TODO: multiplayer blog, see other users browsing the site
 // TODO: character builder that float near the cursor
@@ -15,6 +16,7 @@ const View = styled.main`
   display: grid;
   grid-gap: 1rem;
   text-align: center;
+  padding-bottom: 50vh;
 
   > :first-child {
     margin-bottom: 1rem;
@@ -41,6 +43,8 @@ const Home: NextPage = () => {
       <View>
         <Hero title={title}>{/* <h4>blog</h4> */}</Hero>
       </View>
+
+      <Cursors />
     </div>
   )
 }
