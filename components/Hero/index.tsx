@@ -370,7 +370,7 @@ export const Hero: FC<{ title: string }> = ({
       <Canvas
         flat
         linear
-        dpr={2}
+        dpr={[1, 2]}
         // camera={{ fov: 10, position: [0, 0, 40] }}
       >
         {/* <ambientLight /> */}

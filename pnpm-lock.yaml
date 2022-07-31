@@ -14,6 +14,7 @@ specifiers:
   '@types/react': 17.0.38
   '@types/three': 0.142.0
   chroma-js: 2.4.2
+  constate: 3.3.2
   d3-ease: 3.0.1
   eslint: 8.7.0
   eslint-config-next: 12.0.9
@@ -29,6 +30,7 @@ specifiers:
   ramda: 0.28.0
   react: 18.2.0
   react-dom: 18.2.0
+  react-merge-refs: 2.0.1
   react-use-websocket: 4.2.0
   three: 0.142.0
   three-stdlib: 2.12.1
@@ -43,6 +45,7 @@ dependencies:
   '@react-three/drei': 9.17.3_vbfuau4xnz7crjyzqcrd32y7ju
   '@react-three/fiber': 8.2.1_5kidazjkmgjhxqotnaqokpbepa
   chroma-js: 2.4.2
+  constate: 3.3.2_react@18.2.0
   d3-ease: 3.0.1
   express: 4.18.1
   lerp: 1.0.3
@@ -53,6 +56,7 @@ dependencies:
   ramda: 0.28.0
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
+  react-merge-refs: 2.0.1
   react-use-websocket: 4.2.0_biqbaboplfbrettd7655fr4n2y
   three: 0.142.0
   three-stdlib: 2.12.1_three@0.142.0
@@ -1526,6 +1530,14 @@ packages:
   /concat-map/0.0.1:
     resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
     dev: true
+
+  /constate/3.3.2_react@18.2.0:
+    resolution: {integrity: sha512-ZnEWiwU6QUTil41D5EGpA7pbqAPGvnR9kBjko8DzVIxpC60mdNKrP568tT5WLJPAxAOtJqJw60+h79ot/Uz1+Q==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    dependencies:
+      react: 18.2.0
+    dev: false
 
   /content-disposition/0.5.4:
     resolution: {integrity: sha512-FveZTNuGw04cxlAiWbzi6zTAL/lhehaWbTtgluJh4/E95DqMwTmha3KZN1aAWA8cFIhHzMZUvLevkw5Rqk+tSQ==}
@@ -3367,6 +3379,10 @@ packages:
 
   /react-merge-refs/1.1.0:
     resolution: {integrity: sha512-alTKsjEL0dKH/ru1Iyn7vliS2QRcBp9zZPGoWxUOvRGWPUYgjo+V01is7p04It6KhgrzhJGnIj9GgX8W4bZoCQ==}
+    dev: false
+
+  /react-merge-refs/2.0.1:
+    resolution: {integrity: sha512-pywF6oouJWuqL26xV3OruRSIqai31R9SdJX/I3gP2q8jLxUnA1IwXcLW8werUHLZOrp4N7YOeQNZrh/BKrHI4A==}
     dev: false
 
   /react-reconciler/0.27.0_react@18.2.0:

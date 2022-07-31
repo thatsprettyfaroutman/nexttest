@@ -1,9 +1,12 @@
-import { FC, useEffect, useState } from "react"
+import { FC, useRef, useMemo } from "react"
 import styled from "@emotion/styled"
-import throttle from "lodash.throttle"
-import { Cursor } from "./components/Cursor"
+import * as THREE from "three"
+import { Canvas, useFrame, useThree } from "@react-three/fiber"
+import { useGLTF, Instances } from "@react-three/drei"
 
-// TODO: react three fiber - InstancedMesh Cursor
+import { useCursorsContext, CursorsProvider } from "./hooks/useCursorsContext"
+import { SelfCursor } from "./components/SelfCursor"
+import { OtherCursor } from "./components/OtherCursor"
 
 const StyledCursors = styled.div`
   position: fixed;
@@ -12,77 +15,66 @@ const StyledCursors = styled.div`
   bottom: 0;
   left: 0;
   pointer-events: none;
+  z-index: 1001;
 `
 
-let s: WebSocket
+const ThreeCursors = () => {
+  const { otherCursors } = useCursorsContext()
+  const otherCursorsMeshRef = useRef<THREE.InstancedMesh | undefined>(undefined)
 
-export const Cursors: FC = ({ ...restProps }) => {
-  const [cursors, setCursors] = useState<Array<[string, [number, number]]>>([])
+  // @ts-ignore
+  const { nodes } = useGLTF("/cursor.glb")
 
-  useEffect(() => {
-    if (!s || s.readyState === WebSocket.CLOSED) {
-      s = new WebSocket(`wss://${window.location.host}`)
+  const {
+    size: { height: ch },
+    viewport: { height: vh },
+  } = useThree()
+
+  useFrame((s) => {
+    if (!otherCursorsMeshRef.current) {
+      return
     }
 
-    console.log(s.readyState)
-
-    const docHeight = document.body.clientHeight
-
-    const handleError = (m) => {
-      console.log("error")
-    }
-    s.addEventListener("error", handleError)
-
-    const handleOpen = (m) => {
-      console.log("websocket connection open")
-    }
-    s.addEventListener("open", handleOpen)
-
-    const handleMessage = (m) => {
-      const data = JSON.parse(m.data)
-      switch (data.type) {
-        case "init":
-          console.log("WebSocket initted")
-          break
-
-        case "cursors":
-          setCursors(
-            // @ts-ignore
-            data.cursors.map(([id, [x, y]]) => [
-              id,
-              [x * window.innerWidth, y * docHeight],
-            ])
-          )
-          break
-      }
-    }
-    s.addEventListener("message", handleMessage)
-
-    const handleSendCursorPosition = throttle((e: MouseEvent) => {
-      if (s.readyState !== WebSocket.OPEN) {
-        return
-      }
-
-      s.send(
-        JSON.stringify([e.offsetX / window.innerWidth, e.offsetY / docHeight])
-      )
-    }, 100)
-
-    window.addEventListener("mousemove", handleSendCursorPosition)
-
-    return () => {
-      s.removeEventListener("error", handleError)
-      s.removeEventListener("open", handleOpen)
-      s.removeEventListener("message", handleMessage)
-      window.removeEventListener("mousemove", handleSendCursorPosition)
-    }
-  }, [])
+    otherCursorsMeshRef.current.position.y = window.scrollY * (vh / ch)
+  })
 
   return (
+    <>
+      <Instances geometry={nodes.Cursor.geometry}>
+        <meshBasicMaterial args={[{ color: "#fff" }]} />
+        <SelfCursor />
+      </Instances>
+      <Instances
+        // @ts-ignore
+        ref={otherCursorsMeshRef}
+        geometry={nodes.Cursor.geometry}
+      >
+        <meshBasicMaterial args={[{ color: "#fff" }]} />
+        {otherCursors.map((cursor) => {
+          return <OtherCursor key={cursor[0]} cursor={cursor} />
+        })}
+      </Instances>
+    </>
+  )
+}
+
+export const Cursors: FC = ({ ...restProps }) => {
+  return (
     <StyledCursors {...restProps}>
-      {cursors.map(([id, xy]) => (
-        <Cursor key={id} xy={xy} />
-      ))}
+      <Canvas
+        flat
+        linear
+        dpr={[1, 2]}
+        camera={{ fov: 40, position: [0, 0, 5] }}
+      >
+        {/*
+           `CursorsProvider` must be inside `Canvas` or it wont work, r3f reconcilier vs JSX reconcilier 
+           https://github.com/pmndrs/react-three-fiber/issues/262
+        */}
+        <CursorsProvider>
+          <ThreeCursors />
+        </CursorsProvider>
+      </Canvas>
     </StyledCursors>
   )
 }

@@ -17,6 +17,7 @@ function MyApp({ Component, pageProps }: AppProps) {
               background-color: ${theme.background};
               color: ${theme.foreground};
               font-size: 16px;
+              cursor: none;
 
               * {
                 font-family: "Open Sans", sans-serif;

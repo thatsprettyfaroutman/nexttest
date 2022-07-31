@@ -1,109 +1,48 @@
-import {
-  FC,
-  useEffect,
-  useState,
-  useLayoutEffect,
-  useCallback,
-  useRef,
-} from "react"
-import styled from "@emotion/styled"
-import { PerfectCursor } from "perfect-cursors"
+import { useRef, forwardRef } from "react"
+import * as THREE from "three"
+import { useThree, useFrame } from "@react-three/fiber"
+import { Instance } from "@react-three/drei"
+import { mergeRefs } from "react-merge-refs"
 
-const usePerfectCursor = (cb: (point: number[]) => void, point?: number[]) => {
-  const [pc] = useState(() => new PerfectCursor(cb))
+export * from "./hooks/useCursorThreePosition"
 
-  useLayoutEffect(() => {
-    if (point) pc.addPoint(point)
-    return () => pc.dispose()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pc])
+export const Cursor = forwardRef<unknown, { color: string }>(
+  ({ color, ...restProps }, forwardedRef) => {
+    const ref = useRef<THREE.InstancedMesh | null>(null)
 
-  const onPointChange = useCallback(
-    (point: number[]) => pc.addPoint(point),
-    [pc]
-  )
+    const {
+      size: { width: cw, height: ch },
+      viewport: { width: vw, height: vh },
+    } = useThree()
 
-  return onPointChange
-}
+    const bounds = useRef({ cw, ch, vw, vh })
+    bounds.current = { cw, ch, vw, vh }
 
-const StyledCursor = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 1rem;
-  height: 1rem;
-  background-color: #00f;
-`
-
-const createListenToScroll = () => {
-  let listening = false
-  let listeners: Array<(scrollY: number) => void> = []
-
-  const handleListen = () => {
-    listeners.forEach((cb) => {
-      if (typeof cb === "function") {
-        cb(window.scrollY)
+    useFrame(() => {
+      if (!ref.current) {
+        return
       }
-    })
-  }
 
-  return (cb: (scrollY: number) => void) => {
-    if (!listening) {
-      window.addEventListener("scroll", handleListen)
-      listening = true
-    }
-
-    listeners.push(cb)
-    cb(window.scrollY)
-
-    return () => {
-      listeners = listeners.filter((x) => x !== cb)
-
-      if (!listeners.length) {
-        window.removeEventListener("scroll", handleListen)
-        listening = false
-      }
-    }
-  }
-}
-
-const listenToScroll = createListenToScroll()
-
-export const Cursor: FC<{ xy: [number, number] }> = ({ xy, ...restProps }) => {
-  const ref = useRef<HTMLDivElement | null>(null)
-
-  const pos = useRef({ xy: [0, 0], scrollY: window.scrollY })
-
-  const updatePosition = useCallback(() => {
-    if (!ref.current) {
-      return
-    }
-
-    const [x, y] = pos.current.xy
-    const scrollY = pos.current.scrollY
-
-    ref.current.style.transform = `translate3d(${x}px, ${y - scrollY}px, 0)`
-  }, [])
-
-  const onPointChange = usePerfectCursor(
-    useCallback((xy: [number, number]) => {
-      pos.current.xy = xy
-      updatePosition()
-    }, [])
-  )
-
-  useEffect(() => {
-    onPointChange(xy)
-
-    const unlisten = listenToScroll((scrollY) => {
-      pos.current.scrollY = scrollY
-      updatePosition()
+      const { vw } = bounds.current
+      const xp = ref.current.position.x / vw + 0.5
+      ref.current.rotation.y = THREE.MathUtils.lerp(
+        Math.PI * 0.25 + Math.PI * 0.5,
+        Math.PI * 0.25,
+        xp
+      )
     })
 
-    return () => {
-      unlisten()
-    }
-  }, [xy])
+    return (
+      <Instance
+        ref={mergeRefs([forwardedRef, ref])}
+        scale={[0.025, 0.025, 0.025]}
+        rotation-x={Math.PI * -0.5}
+        rotation-z={Math.PI * 0.25}
+        color={color || "#fff"}
+        {...restProps}
+      />
+    )
+  }
+)
 
-  return <StyledCursor ref={ref} />
-}
+Cursor.displayName = "Cursor"
