@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react"
 import constate from "constate"
-
-// TODO: reconnect on disconnect somehow dunno
+import { useTrackBodySize } from "./useTrackBodySize"
 
 const getWebSocket = () => new WebSocket(`wss://${window.location.host}`)
 
@@ -9,20 +8,19 @@ const useCursors = () => {
   const [loading, setLoading] = useState(true)
   const [socket, setSocket] = useState<WebSocket | null>(null)
   const [otherCursors, setOtherCursors] = useState<
-    Array<[string, [number, number]]>
+    Array<[string, [number, number] | null]>
   >([])
+  const bodySizeRef = useTrackBodySize()
 
   const selfCursorIdRef = useRef()
 
   useEffect(() => {
     let mounted = true
     let socket: WebSocket = getWebSocket()
+
     const handleConnect = () => {
       socket = getWebSocket()
     }
-
-    // TODO: track docheight on resize (only)
-    // const docHeight = document.body.clientHeight
 
     const handleOpen = (e: Event) => {
       console.log("websocket connection open")
@@ -48,18 +46,18 @@ const useCursors = () => {
 
         case "cursors":
           setOtherCursors(
-            data.cursors
+            (data.cursors as [string, [number, number] | null][])
               // @ts-ignore
-              // .filter(([id]) => id !== selfCursorIdRef.current)
+              .filter(([id]) => id !== selfCursorIdRef.current)
               // @ts-ignore
-              .map(([id, [x, y]]) => [
-                id,
-                [
-                  x * window.innerWidth,
-                  // TODO: y relative to document.body.clientHeight
-                  y, //* docHeight
-                ],
-              ])
+              .map(([id, xy]) => {
+                if (!xy) {
+                  return [id, xy]
+                }
+
+                const [x, y] = xy
+                return [id, [x * window.innerWidth, y * bodySizeRef.current]]
+              })
           )
           break
       }
@@ -71,6 +69,7 @@ const useCursors = () => {
       socket.removeEventListener("error", handleClose)
       socket.removeEventListener("close", handleClose)
       socket.removeEventListener("message", handleMessage)
+      socket.close()
       if (mounted) {
         setLoading(true)
         setSocket(null)
@@ -89,43 +88,32 @@ const useCursors = () => {
     socket.addEventListener("close", handleClose)
     socket.addEventListener("error", handleClose)
 
-    /*
-      const sendCursorPosition = throttle(() => {
-        if (socket.readyState !== WebSocket.OPEN) {
-          return
-        }
-
-        const [x, y] = selfCursorPositionRef.current
-
-        socket.send(JSON.stringify([x / window.innerWidth, y / docHeight]))
-      }, 100)
-
-      const handleSendCursorPosition = (e: MouseEvent) => {
-        selfCursorPositionRef.current = [e.x, e.y + scrollY]
-        sendCursorPosition()
-      }
-
-      window.addEventListener("mousemove", handleSendCursorPosition)
-    */
-
     return () => {
       mounted = false
-      // window.removeEventListener("mousemove", handleSendCursorPosition)
-
       handleDisconnect()
     }
-  }, [])
+  }, [bodySizeRef])
 
   const sendCursorPosition = useCallback(
-    (x: number, y: number) => {
+    (x: number | null, y: number | null) => {
       if (!socket || socket.readyState !== WebSocket.OPEN) {
         return
       }
 
-      // TODO: y relative to document.body.clientHeight
-      socket.send(JSON.stringify([x / window.innerWidth, y + scrollY]))
+      // This hides the cursor
+      if (x === null || y === null) {
+        socket.send(JSON.stringify(null))
+        return
+      }
+
+      socket.send(
+        JSON.stringify([
+          x / window.innerWidth,
+          (y + scrollY) / bodySizeRef.current,
+        ])
+      )
     },
-    [socket]
+    [socket, bodySizeRef]
   )
 
   return { loading, otherCursors, sendCursorPosition }
