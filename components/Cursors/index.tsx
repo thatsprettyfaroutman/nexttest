@@ -8,6 +8,8 @@ import { useCursorsContext, CursorsProvider } from "./hooks/useCursorsContext"
 import { SelfCursor } from "./components/SelfCursor"
 import { OtherCursor } from "./components/OtherCursor"
 
+import { useTrackBodyHeight } from "./hooks/useTrackBodySize"
+
 const StyledCursors = styled.div`
   position: fixed;
   top: 0;
@@ -41,15 +43,22 @@ const ThreeCursors = () => {
   return (
     <>
       <Instances geometry={nodes.Cursor.geometry}>
-        <meshBasicMaterial args={[{ color: "#fff" }]} />
+        <meshStandardMaterial
+          args={[
+            {
+              color: "#fff",
+            },
+          ]}
+        />
         <SelfCursor />
       </Instances>
       <Instances
         // @ts-ignore
         ref={otherCursorsMeshRef}
         geometry={nodes.Cursor.geometry}
+        position-z={-0.125}
       >
-        <meshBasicMaterial args={[{ color: "#fff" }]} />
+        <meshStandardMaterial args={[{ color: "#c0c" }]} />
         {otherCursors.map((cursor) => {
           return <OtherCursor key={cursor[0]} cursor={cursor} />
         })}
@@ -65,11 +74,27 @@ export const Cursors: FC = ({ ...restProps }) => {
         flat
         linear
         dpr={[1, 2]}
-        camera={{ fov: 40, position: [0, 0, 5] }}
+        camera={{ fov: 50, position: [0, 0, 10] }}
       >
+        <hemisphereLight intensity={0.8} />
+        <spotLight
+          angle={0.4}
+          penumbra={1}
+          position={[20, 30, 2.5]}
+          castShadow
+          shadow-bias={-0.00001}
+        />
+        <directionalLight
+          color="#f0f"
+          position={[-10, -10, 0]}
+          intensity={1.5}
+        />
+
         {/*
            `CursorsProvider` must be inside `Canvas` or it wont work, r3f reconcilier vs JSX reconcilier 
            https://github.com/pmndrs/react-three-fiber/issues/262
+           
+           Could prolly use `useContextBridge` from `react-three/drei`
         */}
         <CursorsProvider>
           <ThreeCursors />

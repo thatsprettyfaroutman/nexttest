@@ -13,8 +13,12 @@ const usePerfectCursor = (cb: (point: number[]) => void, point?: number[]) => {
   const [pc] = useState(() => new PerfectCursor(cb))
 
   useLayoutEffect(() => {
-    if (point) pc.addPoint(point)
-    return () => pc.dispose()
+    if (point) {
+      pc.addPoint(point)
+    }
+    return () => {
+      pc.dispose()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pc])
 
@@ -30,50 +34,20 @@ export const OtherCursor = ({
   cursor,
   ...restProps
 }: {
-  cursor: [string, [number, number]]
+  cursor: [string, [number, number] | null]
 }) => {
   const [id, xy] = cursor
+  const [x = 0, y = 0] = xy || []
+  const visible = !!xy
   const ref = useRef<THREE.Mesh | undefined>()
-
   const { getCursorThreeX, getCursorThreeY } = useCursorThreePosition()
-
-  /*
-  const updatePosition = useCallback(() => {
-    if (!ref.current) {
-      return
-    }
-
-    const [x, y] = isSelf ? selfCursorPositionRef.current : pos.current.xy
-
-    const xp = x / window.innerWidth
-
-    const scrollY = pos.current.scrollY
-    ref.current.position.x = (x / window.innerWidth) * width - width * 0.5
-    ref.current.position.y =
-      (y /
-        //+ -scrollY
-        document.body.clientHeight) *
-        -h +
-      height * 0.5
-    ref.current.rotation.y = THREE.MathUtils.lerp(
-      Math.PI * 0.25 + Math.PI * 0.5,
-      Math.PI * 0.25,
-      xp
-    )
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSelf, width, h, height])
-
-*/
 
   const onPointChange = usePerfectCursor(
     useCallback(
-      (xy: number[]) => {
+      ([x, y]) => {
         if (!ref.current) {
           return
         }
-
-        const [x, y] = xy
         ref.current.position.x = getCursorThreeX(x)
         ref.current.position.y = getCursorThreeY(y)
       },
@@ -82,8 +56,11 @@ export const OtherCursor = ({
   )
 
   useEffect(() => {
-    onPointChange(xy)
-  }, [xy, onPointChange])
+    if (!visible) {
+      return
+    }
+    onPointChange([x, y])
+  }, [x, y, onPointChange, visible])
 
-  return <Cursor {...restProps} ref={ref} color="#f0f" position-z={-0.1} />
+  return <Cursor {...restProps} ref={ref} visible={visible} />
 }
