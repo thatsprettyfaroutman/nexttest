@@ -11,8 +11,7 @@ const useCursors = () => {
     Array<[string, [number, number] | null]>
   >([])
   const bodySizeRef = useTrackBodySize()
-
-  const selfCursorIdRef = useRef()
+  const [selfCursorId, setSelfCursorId] = useState<string | null>(null)
 
   useEffect(() => {
     let mounted = true
@@ -41,14 +40,14 @@ const useCursors = () => {
       switch (data.type) {
         case "init":
           console.log("WebSocket initted")
-          selfCursorIdRef.current = data.id
+          setSelfCursorId(data.id)
           break
 
         case "cursors":
           setOtherCursors(
             (data.cursors as [string, [number, number] | null][])
               // @ts-ignore
-              .filter(([id]) => id !== selfCursorIdRef.current)
+              // .filter(([id]) => id !== selfCursorIdRef.current)
               // @ts-ignore
               .map(([id, xy]) => {
                 if (!xy) {
@@ -71,6 +70,7 @@ const useCursors = () => {
       socket.removeEventListener("message", handleMessage)
       socket.close()
       if (mounted) {
+        setSelfCursorId(null)
         setLoading(true)
         setSocket(null)
       }
@@ -116,7 +116,7 @@ const useCursors = () => {
     [socket, bodySizeRef]
   )
 
-  return { loading, otherCursors, sendCursorPosition }
+  return { loading, otherCursors, sendCursorPosition, selfCursorId }
 }
 
 export const [CursorsProvider, useCursorsContext] = constate(useCursors)
