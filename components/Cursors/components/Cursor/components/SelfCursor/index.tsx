@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react"
 import * as THREE from "three"
 import throttle from "lodash.throttle"
-import { useCursorsContext } from "../../hooks/useCursorsContext"
-import { Cursor, useCursorThreePosition } from "../Cursor"
+import { useCursorsContext } from "../../../../hooks/useCursorsContext"
+import { useCursorThreePosition } from "../../hooks/useCursorThreePosition"
+import { BaseCursor } from "../BaseCursor"
 
 export const SelfCursor = ({ ...restProps }) => {
   const { sendCursorPosition } = useCursorsContext()
@@ -48,5 +49,5 @@ export const SelfCursor = ({ ...restProps }) => {
     }
   }, [getCursorThreeX, getCursorThreeY, sendCursorPosition])
 
-  return <Cursor ref={ref} color="#fff" visible={visible} {...restProps} />
+  return <BaseCursor ref={ref} color="#fff" visible={visible} {...restProps} />
 }

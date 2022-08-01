@@ -7,7 +7,8 @@ import {
 } from "react"
 import { PerfectCursor } from "perfect-cursors"
 import * as THREE from "three"
-import { Cursor, useCursorThreePosition } from "../Cursor"
+import { useCursorThreePosition } from "../../hooks/useCursorThreePosition"
+import { BaseCursor } from "../BaseCursor"
 
 const usePerfectCursor = (cb: (point: number[]) => void, point?: number[]) => {
   const [pc] = useState(() => new PerfectCursor(cb))
@@ -35,6 +36,7 @@ export const OtherCursor = ({
   ...restProps
 }: {
   cursor: [string, [number, number] | null]
+  self?: boolean
 }) => {
   const [id, xy] = cursor
   const [x = 0, y = 0] = xy || []
@@ -62,5 +64,5 @@ export const OtherCursor = ({
     onPointChange([x, y])
   }, [x, y, onPointChange, visible])
 
-  return <Cursor {...restProps} ref={ref} visible={visible} />
+  return <BaseCursor {...restProps} ref={ref} visible={visible} />
 }

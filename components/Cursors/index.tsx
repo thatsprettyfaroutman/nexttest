@@ -1,14 +1,27 @@
-import { FC, useRef, useMemo } from "react"
+import { FC, useRef } from "react"
 import styled from "@emotion/styled"
 import * as THREE from "three"
 import { Canvas, useFrame, useThree } from "@react-three/fiber"
 import { useGLTF, Instances } from "@react-three/drei"
+import { useControls } from "leva"
 
 import { useCursorsContext, CursorsProvider } from "./hooks/useCursorsContext"
-import { SelfCursor } from "./components/SelfCursor"
-import { OtherCursor } from "./components/OtherCursor"
+import { SelfCursor, OtherCursor } from "./components/Cursor"
 
-import { useTrackBodyHeight } from "./hooks/useTrackBodySize"
+// TODO: thether that drags the character
+// TODO: blobby character that can be a instanced mesh
+//       - Blob that can be cubey or round or rough maybe has some limbs
+//       - Face made out of couple of spheres maybe
+// TODO: character chat, with quick commands like:
+//       - Pressing H key makes the character say 'Hi'
+//       - O: Omg
+//       - W: Wow
+//       - E: Help
+//       - B: Bye
+//       - T: This
+//       - Y: Yes
+//       - N: No
+//       - etc
 
 const StyledCursors = styled.div`
   position: fixed;
@@ -21,8 +34,12 @@ const StyledCursors = styled.div`
 `
 
 const ThreeCursors = () => {
-  const { otherCursors } = useCursorsContext()
+  const { debugCursor } = useControls({
+    debugCursor: false,
+  })
+  const { otherCursors, selfCursorId } = useCursorsContext()
   const otherCursorsMeshRef = useRef<THREE.InstancedMesh | undefined>(undefined)
+  const debugCursorMesh = useRef<THREE.InstancedMesh | undefined>(undefined)
 
   // @ts-ignore
   const { nodes } = useGLTF("/cursor.glb")
@@ -36,32 +53,62 @@ const ThreeCursors = () => {
     if (!otherCursorsMeshRef.current) {
       return
     }
-
     otherCursorsMeshRef.current.position.y = window.scrollY * (vh / ch)
+
+    if (debugCursorMesh.current) {
+      debugCursorMesh.current.position.y =
+        otherCursorsMeshRef.current.position.y
+    }
   })
 
   return (
     <>
       <Instances geometry={nodes.Cursor.geometry}>
-        <meshStandardMaterial
-          args={[
-            {
-              color: "#fff",
-            },
-          ]}
-        />
+        <meshStandardMaterial args={[{ color: "#fff" }]} />
         <SelfCursor />
       </Instances>
+
+      {debugCursor && (
+        <Instances
+          // @ts-ignore
+          ref={debugCursorMesh}
+          geometry={nodes.Cursor.geometry}
+        >
+          <meshStandardMaterial
+            args={[
+              {
+                color: "#000",
+                transparent: true,
+                opacity: 0,
+              },
+            ]}
+          />
+
+          {otherCursors
+            .filter(([id]) => id === selfCursorId)
+            .map((cursor) => (
+              <OtherCursor
+                key={cursor[0]}
+                cursor={cursor}
+                // @ts-ignore
+                edges="#f0f"
+              />
+            ))}
+        </Instances>
+      )}
+
       <Instances
         // @ts-ignore
         ref={otherCursorsMeshRef}
         geometry={nodes.Cursor.geometry}
-        position-z={-0.125}
+        position-z={-0.25}
       >
         <meshStandardMaterial args={[{ color: "#c0c" }]} />
-        {otherCursors.map((cursor) => {
-          return <OtherCursor key={cursor[0]} cursor={cursor} />
-        })}
+        {otherCursors
+          .filter(([id]) => id !== selfCursorId)
+          .map((cursor) => (
+            <OtherCursor key={cursor[0]} cursor={cursor} />
+          ))}
       </Instances>
     </>
   )
