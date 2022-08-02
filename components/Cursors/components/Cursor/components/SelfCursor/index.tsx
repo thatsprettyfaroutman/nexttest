@@ -1,11 +1,12 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, forwardRef } from "react"
 import * as THREE from "three"
+import { mergeRefs } from "react-merge-refs"
 import throttle from "lodash.throttle"
 import { useCursorsContext } from "../../../../hooks/useCursorsContext"
 import { useCursorThreePosition } from "../../hooks/useCursorThreePosition"
 import { BaseCursor } from "../BaseCursor"
 
-export const SelfCursor = ({ ...restProps }) => {
+export const SelfCursor = forwardRef(({ ...restProps }, forwardedRef) => {
   const { sendCursorPosition } = useCursorsContext()
   const ref = useRef<THREE.InstancedMesh | null>(null)
   const [visible, setVisible] = useState(false)
@@ -49,5 +50,14 @@ export const SelfCursor = ({ ...restProps }) => {
     }
   }, [getCursorThreeX, getCursorThreeY, sendCursorPosition])
 
-  return <BaseCursor ref={ref} color="#fff" visible={visible} {...restProps} />
-}
+  return (
+    <BaseCursor
+      ref={mergeRefs([ref, forwardedRef])}
+      color="#fff"
+      visible={visible}
+      {...restProps}
+    />
+  )
+})
+
+SelfCursor.displayName = "SelfCursor"

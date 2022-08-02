@@ -7,6 +7,7 @@ import { useControls } from "leva"
 
 import { useCursorsContext, CursorsProvider } from "./hooks/useCursorsContext"
 import { SelfCursor, OtherCursor } from "./components/Cursor"
+import { Character } from "./components/Character"
 
 // TODO: thether that drags the character
 // TODO: blobby character that can be a instanced mesh
@@ -61,11 +62,19 @@ const ThreeCursors = () => {
     }
   })
 
+  const selfCursorRef = useRef()
+
   return (
     <>
       <Instances geometry={nodes.Cursor.geometry}>
         <meshStandardMaterial args={[{ color: "#fff" }]} />
-        <SelfCursor />
+        <SelfCursor ref={selfCursorRef} />
+      </Instances>
+
+      <Instances>
+        <boxGeometry args={[0.5, 0.5, 0.5]} />
+        <meshStandardMaterial args={[{ color: "#fff" }]} />
+        <Character linkRef={selfCursorRef} />
       </Instances>
 
       {debugCursor && (

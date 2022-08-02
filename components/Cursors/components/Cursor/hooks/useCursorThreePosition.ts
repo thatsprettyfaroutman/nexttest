@@ -1,3 +1,5 @@
+// TODO: move this file to root hooks dir
+
 import { useRef, useCallback } from "react"
 import { useThree } from "@react-three/fiber"
 
