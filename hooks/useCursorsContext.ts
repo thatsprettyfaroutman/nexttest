@@ -15,11 +15,7 @@ const useCursors = () => {
 
   useEffect(() => {
     let mounted = true
-    let socket: WebSocket = getWebSocket()
-
-    const handleConnect = () => {
-      socket = getWebSocket()
-    }
+    let socket: WebSocket
 
     const handleOpen = (e: Event) => {
       console.log("websocket connection open")
@@ -28,7 +24,6 @@ const useCursors = () => {
         setLoading(false)
       }
     }
-    socket.addEventListener("open", handleOpen)
 
     const handleMessage = (e: MessageEvent) => {
       const data = JSON.parse(e.data)
@@ -61,7 +56,6 @@ const useCursors = () => {
           break
       }
     }
-    socket.addEventListener("message", handleMessage)
 
     const handleDisconnect = () => {
       socket.removeEventListener("open", handleOpen)
@@ -85,8 +79,16 @@ const useCursors = () => {
         handleConnect()
       }
     }
-    socket.addEventListener("close", handleClose)
-    socket.addEventListener("error", handleClose)
+
+    const handleConnect = () => {
+      socket = getWebSocket()
+      socket.addEventListener("open", handleOpen)
+      socket.addEventListener("message", handleMessage)
+      socket.addEventListener("close", handleClose)
+      socket.addEventListener("error", handleClose)
+    }
+
+    handleConnect()
 
     return () => {
       mounted = false

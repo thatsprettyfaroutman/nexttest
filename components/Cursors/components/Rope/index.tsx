@@ -1,15 +1,13 @@
-import { MutableRefObject, useMemo, useRef, useState } from "react"
+import { MutableRefObject, useMemo, useRef } from "react"
 import * as THREE from "three"
 import { useFrame } from "@react-three/fiber"
-import { Line } from "@react-three/drei"
-
-import { RopePhysics } from "./lib"
 import { Line2 } from "three-stdlib"
+import { useCursorThreePosition } from "@/hooks/useCursorThreePosition"
+import { RopePhysics, RopeCurve } from "./lib"
 
-// TODO: use tube
-
-const START_OFFSET = new THREE.Vector3(0, 0, -0.2)
-const END_OFFSET = new THREE.Vector3(0, -0.4, 0)
+const ROPE_START_OFFSET = new THREE.Vector3(0, 0, -0.25)
+export const ROPE_END_OFFSET = new THREE.Vector3(0, -0.25, 0)
+export const ROPE_LENGTH = 2
 
 export const Rope = ({
   startRef,
@@ -25,8 +23,11 @@ export const Rope = ({
   > | null>
 }) => {
   const ref = useRef<Line2 | null>(null)
+
+  const { scaleRatio } = useCursorThreePosition()
+
   const initPoints = useMemo(
-    () => [new THREE.Vector3(-2, 0, 0), new THREE.Vector3(2, 0, 0)],
+    () => [new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, -ROPE_LENGTH, 0)],
     []
   )
 
@@ -34,14 +35,15 @@ export const Rope = ({
     const ropePoints = RopePhysics.generate(
       initPoints[0],
       initPoints[1],
-      0.2,
+      0.25,
       0.88,
       0.95
     )
-    return new RopePhysics(ropePoints, 500, new THREE.Vector3(0, -1, -10))
+    return new RopePhysics(ropePoints, 500, new THREE.Vector3(0, -5, -1))
   }, [initPoints])
 
   const lastTime = useRef(0)
+  const ropeCurve = useMemo(() => new RopeCurve(rope), [rope])
   useFrame((s) => {
     const deltaTime = s.clock.elapsedTime - lastTime.current
     lastTime.current = s.clock.elapsedTime
@@ -56,18 +58,38 @@ export const Rope = ({
     if (rope) {
       const pointA = rope.getFirstPoint()
       const pointB = rope.getLastPoint()
-      pointA.pos = start.position.clone().add(START_OFFSET)
-      pointB.pos = end.position.clone().add(END_OFFSET)
+      pointA.pos = start.position.clone().add(ROPE_START_OFFSET)
+      pointB.pos = end.position.clone().add(ROPE_END_OFFSET)
       rope.update(deltaTime)
     }
 
-    line.geometry.setPositions(
-      rope
-        .getPoints()
-        .map((p) => p.pos.toArray())
-        .flat()
-    )
+    // line.geometry.setPositions(
+    //   rope
+    //     .getPoints()
+    //     .map((p) => p.pos.toArray())
+    //     .flat()
+    // )
+
+    if (rope) {
+      // @ts-ignore
+      line.geometry = new THREE.TubeGeometry(
+        ropeCurve,
+        rope.getPoints().length,
+        0.025 * scaleRatio,
+        8,
+        false
+      )
+    }
   })
 
-  return <Line ref={ref} points={initPoints} color="#f0f" lineWidth={3} />
+  // return <Line ref={ref} points={initPoints} color="#f0f" lineWidth={2} />
+
+  return (
+    <mesh ref={ref}>
+      <tubeBufferGeometry
+      // args={[ropeCurve, ropeCurve._rope._points.length, 0.1, 8, false]}
+      />
+      <meshStandardMaterial args={[{ color: "#f8f" }]} />
+    </mesh>
+  )
 }

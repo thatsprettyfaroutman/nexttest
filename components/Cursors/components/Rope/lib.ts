@@ -193,8 +193,6 @@ export class RopePhysics {
     this.getFirstPoint = this.getFirstPoint.bind(this)
     this.getLastPoint = this.getLastPoint.bind(this)
     this.getPoints = this.getPoints.bind(this)
-
-    console.log(points)
   }
 
   getPoint(index: number) {
@@ -230,113 +228,33 @@ export class RopePhysics {
   }
 }
 
-/*
-  useEffect(() => {
-    //APP SETUP!
+export class RopeCurve extends THREE.Curve<THREE.Vector3> {
+  _rope: RopePhysics
 
-    // const canvas = document.getElementById("canvas")
-    const canvas = document.createElement("canvas")
-    canvas.width = 800
-    canvas.height = 600
-    document.body.appendChild(canvas)
-    const context = canvas.getContext("2d")
+  constructor(rope: RopePhysics) {
+    super()
+    this._rope = rope
+    this.getPoint = this.getPoint.bind(this)
+  }
 
-    const gradient = context?.createLinearGradient(0, 0, 500, 0)
-    gradient?.addColorStop(0, "white")
-    gradient?.addColorStop(0.25, "yellow")
-    gradient?.addColorStop(0.5, "blue")
-    gradient?.addColorStop(0.75, "red")
-    gradient?.addColorStop(1.0, "white")
+  getPoint(t: number, optionalTarget = new THREE.Vector3()) {
+    const floatI = t * (this._rope._points.length - 1)
+    // @ts-ignore just a faster Math.floor
+    const i = parseInt(floatI, 10)
 
-    const args = {
-      //   start: { x: canvas.width / 2, y: canvas.height / 2 },
-      start: new THREE.Vector3(canvas.width / 2 - 100, canvas.height / 2, 10),
-      //   end: { x: canvas.width - 100, y: canvas.height / 2 },
-      end: new THREE.Vector3(canvas.width / 2 + 100, canvas.height / 2, 20),
-      resolution: 20,
-      mass: 0.88,
-      damping: 0.95,
-      //   gravity: { x: 0, y: 10 },
-      gravity: new THREE.Vector3(0, 10, -10),
-      solverIterations: 500,
-      ropeColour: gradient,
-      ropeSize: 4,
+    const ropePoint = this._rope.getPoint(i)
+
+    const pos = ropePoint?.pos?.clone()
+    if (!pos) {
+      console.log("DIS")
+      return optionalTarget.set(0, 0, 0).multiplyScalar(1)
     }
 
-    const points = Rope.generate(
-      args.start,
-      args.end,
-      args.resolution,
-      args.mass,
-      args.damping
-    )
-
-    let rope = new Rope(points, args.solverIterations)
-
-    const drawRopePoints = (
-      points: RopePoint[],
-      colour: typeof gradient | string = "#f0f",
-      width: number
-    ) => {
-      if (!context) {
-        console.warn("NO CONTEXT BOII")
-        return
-      }
-
-      context.clearRect(0, 0, canvas.width, canvas.height)
-
-      for (let i = 0; i < points.length; i++) {
-        let p = points[i]
-
-        const prev = i > 0 ? points[i - 1] : null
-
-        if (prev) {
-          context.beginPath()
-          context.moveTo(prev.pos.x, prev.pos.y)
-          context.lineTo(p.pos.x, p.pos.y)
-          context.lineWidth = Math.abs(p.pos.z)
-          context.strokeStyle = colour
-          context.stroke()
-        }
-      }
+    if (ropePoint.next) {
+      pos.lerp(ropePoint.next.pos, floatI - i)
     }
 
-    const startTime = Date.now()
-    let lastTime = startTime
-    let running = true
-    const tock = () => {
-      if (!running) {
-        return
-      }
-      const now = Date.now()
-      const elapsedTime = now - startTime
-      const deltaTime = now - lastTime
-      lastTime = now
-
-      rope.update(args.gravity, deltaTime * 0.001)
-
-      const pointA = rope.getFirstPoint()
-      pointA.pos.x =
-        Math.sin(elapsedTime * 0.005) * 120 + canvas.width * 0.5 - 200
-      pointA.pos.y = Math.cos(elapsedTime * 0.0026) * 100 + canvas.height * 0.5
-      //   pointA.pos.z = Math.cos(elapsedTime * 0.00126) * 100
-
-      const pointB = rope.getLastPoint()
-      pointB.pos.x =
-        Math.sin(elapsedTime * 0.003) * -300 + canvas.width * 0.5 + 200
-      pointB.pos.y = Math.cos(elapsedTime * 0.00262) * 200 + canvas.height * 0.5
-
-      drawRopePoints(points, args.ropeColour, args.ropeSize)
-
-      requestAnimationFrame(tock)
-    }
-
-    tock()
-
-    return () => {
-      running = false
-      canvas.remove()
-    }
-  }, [])
-  
-  */
+    // console.log(i, this._rope._points[i], pos)
+    return optionalTarget.set(...pos.toArray()).multiplyScalar(1)
+  }
+}

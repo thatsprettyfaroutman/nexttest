@@ -7,7 +7,7 @@ import {
 } from "react"
 import { PerfectCursor } from "perfect-cursors"
 import * as THREE from "three"
-import { useCursorThreePosition } from "../../hooks/useCursorThreePosition"
+import { useCursorThreePosition } from "@/hooks/useCursorThreePosition"
 import { BaseCursor } from "../BaseCursor"
 
 const usePerfectCursor = (cb: (point: number[]) => void, point?: number[]) => {

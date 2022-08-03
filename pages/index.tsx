@@ -16,6 +16,7 @@ const View = styled.main`
   display: grid;
   grid-gap: 1rem;
   text-align: center;
+  min-height: 100vh;
   padding-bottom: 50vh;
 
   > :first-child {
@@ -40,9 +41,7 @@ const Home: NextPage = () => {
         <title>DEVBLOG</title>
       </Head>
 
-      <View>
-        <Hero title={title}>{/* <h4>blog</h4> */}</Hero>
-      </View>
+      <View>{/* <Hero title={title}/> */}</View>
 
       <Cursors />
     </div>

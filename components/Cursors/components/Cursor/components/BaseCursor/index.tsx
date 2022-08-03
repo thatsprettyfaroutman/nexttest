@@ -4,8 +4,7 @@ import { useFrame } from "@react-three/fiber"
 import { Instance, Edges } from "@react-three/drei"
 import { useSpring, animated } from "@react-spring/three"
 import { mergeRefs } from "react-merge-refs"
-
-import { useCursorThreePosition } from "../../hooks/useCursorThreePosition"
+import { useCursorThreePosition } from "@/hooks/useCursorThreePosition"
 
 const CURSOR_SCALE = 0.1
 
@@ -19,7 +18,7 @@ export const BaseCursor = forwardRef<
   const ref = useRef<THREE.InstancedMesh | null>(null)
   const edgesRef = useRef<THREE.Mesh | null>(null)
 
-  const { boundsRef } = useCursorThreePosition()
+  const { boundsRef, scaleRatio } = useCursorThreePosition()
 
   useFrame(() => {
     if (!ref.current) {
@@ -48,7 +47,7 @@ export const BaseCursor = forwardRef<
 
   const spring = useSpring({
     from: { scale: 0 },
-    scale: visible ? 1 : 0,
+    scale: visible ? 1 * scaleRatio : 0,
   })
 
   return (

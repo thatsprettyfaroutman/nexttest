@@ -2,17 +2,18 @@ import { FC, useRef } from "react"
 import styled from "@emotion/styled"
 import * as THREE from "three"
 import { Canvas, useFrame, useThree } from "@react-three/fiber"
-import { useGLTF, Instances } from "@react-three/drei"
+import { useGLTF, Instances, MeshDistortMaterial } from "@react-three/drei"
 import { useControls } from "leva"
 
-import { useCursorsContext, CursorsProvider } from "./hooks/useCursorsContext"
+import { useCursorsContext, CursorsProvider } from "@/hooks/useCursorsContext"
 import { SelfCursor, OtherCursor } from "./components/Cursor"
 import { Character } from "./components/Character"
 
-// TODO: thether that drags the character
+// TODO: mouse positions as refs from hook so they dont need to be passed everywhere as props
 // TODO: blobby character that can be a instanced mesh
 //       - Blob that can be cubey or round or rough maybe has some limbs
 //       - Face made out of couple of spheres maybe
+//       - HATS
 // TODO: character chat, with quick commands like:
 //       - Pressing H key makes the character say 'Hi'
 //       - O: Omg
@@ -23,6 +24,8 @@ import { Character } from "./components/Character"
 //       - Y: Yes
 //       - N: No
 //       - etc
+// TODO: Food for characters
+// TODO: Battles?
 
 const StyledCursors = styled.div`
   position: fixed;
@@ -72,8 +75,15 @@ const ThreeCursors = () => {
       </Instances>
 
       <Instances>
-        <boxGeometry args={[0.5, 0.5, 0.5]} />
-        <meshStandardMaterial args={[{ color: "#fff" }]} />
+        <boxGeometry args={[2, 2, 2, 10, 10, 10]} />
+        {/* <torusGeometry /> */}
+        {/* <meshStandardMaterial args={[{ color: "#fff" }]} /> */}
+        <MeshDistortMaterial
+          color="#0ff"
+          speed={5}
+          distort={0.1}
+          radius={0.25}
+        />
         <Character linkRef={selfCursorRef} />
       </Instances>
 
@@ -127,10 +137,9 @@ export const Cursors: FC = ({ ...restProps }) => {
   return (
     <StyledCursors {...restProps}>
       <Canvas
-        flat
-        linear
-        dpr={[1, 2]}
-        camera={{ fov: 50, position: [0, 0, 10] }}
+        // flat
+        // linear
+        camera={{ fov: 20, position: [0, 0, 20] }}
       >
         <hemisphereLight intensity={0.8} />
         <spotLight

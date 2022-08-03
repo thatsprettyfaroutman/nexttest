@@ -2,8 +2,8 @@ import { useEffect, useRef, useState, forwardRef } from "react"
 import * as THREE from "three"
 import { mergeRefs } from "react-merge-refs"
 import throttle from "lodash.throttle"
-import { useCursorsContext } from "../../../../hooks/useCursorsContext"
-import { useCursorThreePosition } from "../../hooks/useCursorThreePosition"
+import { useCursorsContext } from "@/hooks/useCursorsContext"
+import { useCursorThreePosition } from "@/hooks/useCursorThreePosition"
 import { BaseCursor } from "../BaseCursor"
 
 export const SelfCursor = forwardRef(({ ...restProps }, forwardedRef) => {

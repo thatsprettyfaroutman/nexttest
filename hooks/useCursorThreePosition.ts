@@ -1,6 +1,6 @@
 // TODO: move this file to root hooks dir
 
-import { useRef, useCallback } from "react"
+import { useRef, useCallback, useMemo } from "react"
 import { useThree } from "@react-three/fiber"
 
 export const useCursorThreePosition = () => {
@@ -11,6 +11,8 @@ export const useCursorThreePosition = () => {
 
   const boundsRef = useRef({ cw, ch, vw, vh })
   boundsRef.current = { cw, ch, vw, vh }
+
+  const scaleRatio = useMemo(() => (vh / ch) * 100, [vh, ch])
 
   const getCursorThreeX = useCallback((x: number) => {
     const { cw, vw } = boundsRef.current
@@ -24,6 +26,7 @@ export const useCursorThreePosition = () => {
 
   return {
     boundsRef,
+    scaleRatio,
     getCursorThreeX,
     getCursorThreeY,
   }
