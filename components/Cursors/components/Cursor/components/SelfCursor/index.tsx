@@ -14,7 +14,7 @@ export const SelfCursor = forwardRef(({ ...restProps }, forwardedRef) => {
   const { getCursorThreeX, getCursorThreeY } = useCursorThreePosition()
 
   useEffect(() => {
-    const throttledSendCursorPosition = throttle(sendCursorPosition, 100)
+    const throttledSendCursorPosition = throttle(sendCursorPosition, 50)
 
     const handleMouseMove = (e: MouseEvent) => {
       if (!ref.current) {

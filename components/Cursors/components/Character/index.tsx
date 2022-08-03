@@ -21,7 +21,6 @@ export const Character = forwardRef<
   }
 >(({ visible = true, linkRef, ...restProps }, forwardedRef) => {
   const ref = useRef<THREE.InstancedMesh | null>(null)
-  const { scaleRatio } = useCursorThreePosition()
   const velocityRef = useRef(new THREE.Vector3(0, 0, 0))
   const lastTime = useRef(0)
   useFrame((s) => {
@@ -38,7 +37,7 @@ export const Character = forwardRef<
     const distance = posDistance.distanceTo(linkPos)
 
     // Move towards cursor if too far away
-    if (distance > ROPE_LENGTH * scaleRatio) {
+    if (distance > ROPE_LENGTH) {
       velocityRef.current.add(
         linkPos
           .clone()
@@ -49,7 +48,7 @@ export const Character = forwardRef<
     }
 
     // Move away from the cursor when too close
-    if (distance < 0.5 * scaleRatio) {
+    if (distance < 0.5) {
       velocityRef.current
         .add(
           linkPos
@@ -69,7 +68,7 @@ export const Character = forwardRef<
 
   const spring = useSpring({
     from: { scale: 0 },
-    scale: visible ? 1 * scaleRatio : 0,
+    scale: visible ? 1 : 0,
   })
 
   return (

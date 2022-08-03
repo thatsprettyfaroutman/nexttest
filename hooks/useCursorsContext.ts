@@ -1,4 +1,5 @@
-import { useEffect, useState, useRef, useCallback } from "react"
+import { useEffect, useState, useCallback } from "react"
+import { isNil } from "ramda"
 import constate from "constate"
 import { useTrackBodySize } from "./useTrackBodySize"
 
@@ -45,8 +46,8 @@ const useCursors = () => {
               // .filter(([id]) => id !== selfCursorIdRef.current)
               // @ts-ignore
               .map(([id, xy]) => {
-                if (!xy) {
-                  return [id, xy]
+                if (isNil(xy)) {
+                  return [id, null]
                 }
 
                 const [x, y] = xy

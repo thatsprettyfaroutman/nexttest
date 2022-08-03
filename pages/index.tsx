@@ -17,7 +17,6 @@ const View = styled.main`
   grid-gap: 1rem;
   text-align: center;
   min-height: 100vh;
-  padding-bottom: 50vh;
 
   > :first-child {
     margin-bottom: 1rem;
@@ -28,6 +27,10 @@ const SubHeading = styled.p`
   color: ${({ theme }) => theme.foreground};
   opacity: 0.6;
   font-size: 18px;
+`
+
+const SomePadding = styled.div`
+  padding-bottom: 50vh;
 `
 
 const Home: NextPage = () => {
@@ -44,6 +47,8 @@ const Home: NextPage = () => {
       <View>{/* <Hero title={title}/> */}</View>
 
       <Cursors />
+
+      <SomePadding />
     </div>
   )
 }

@@ -1,8 +1,7 @@
-// TODO: move this file to root hooks dir
-
-import { useRef, useCallback, useMemo } from "react"
+import { useRef, useCallback } from "react"
 import { useThree } from "@react-three/fiber"
 
+// TODO: better name, this one is crayzy
 export const useCursorThreePosition = () => {
   const {
     size: { width: cw, height: ch },
@@ -11,8 +10,6 @@ export const useCursorThreePosition = () => {
 
   const boundsRef = useRef({ cw, ch, vw, vh })
   boundsRef.current = { cw, ch, vw, vh }
-
-  const scaleRatio = useMemo(() => (vh / ch) * 100, [vh, ch])
 
   const getCursorThreeX = useCallback((x: number) => {
     const { cw, vw } = boundsRef.current
@@ -26,7 +23,6 @@ export const useCursorThreePosition = () => {
 
   return {
     boundsRef,
-    scaleRatio,
     getCursorThreeX,
     getCursorThreeY,
   }

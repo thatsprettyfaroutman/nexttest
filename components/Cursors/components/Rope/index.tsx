@@ -6,7 +6,7 @@ import { useCursorThreePosition } from "@/hooks/useCursorThreePosition"
 import { RopePhysics, RopeCurve } from "./lib"
 
 const ROPE_START_OFFSET = new THREE.Vector3(0, 0, -0.25)
-export const ROPE_END_OFFSET = new THREE.Vector3(0, -0.25, 0)
+export const ROPE_END_OFFSET = new THREE.Vector3(0, -0.1, 0)
 export const ROPE_LENGTH = 2
 
 export const Rope = ({
@@ -23,8 +23,6 @@ export const Rope = ({
   > | null>
 }) => {
   const ref = useRef<Line2 | null>(null)
-
-  const { scaleRatio } = useCursorThreePosition()
 
   const initPoints = useMemo(
     () => [new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, -ROPE_LENGTH, 0)],
@@ -75,7 +73,7 @@ export const Rope = ({
       line.geometry = new THREE.TubeGeometry(
         ropeCurve,
         rope.getPoints().length,
-        0.025 * scaleRatio,
+        0.025,
         8,
         false
       )

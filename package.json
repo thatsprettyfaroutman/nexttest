@@ -19,6 +19,7 @@
     "constate": "3.3.2",
     "d3-ease": "3.0.1",
     "express": "4.18.1",
+    "lamina": "1.1.21",
     "lerp": "1.0.3",
     "leva": "0.9.29",
     "lodash.debounce": "4.0.8",

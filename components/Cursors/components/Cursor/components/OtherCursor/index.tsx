@@ -6,6 +6,7 @@ import {
   useRef,
 } from "react"
 import { PerfectCursor } from "perfect-cursors"
+import { isNil } from "ramda"
 import * as THREE from "three"
 import { useCursorThreePosition } from "@/hooks/useCursorThreePosition"
 import { BaseCursor } from "../BaseCursor"
@@ -39,10 +40,12 @@ export const OtherCursor = ({
   self?: boolean
 }) => {
   const [id, xy] = cursor
-  const [x = 0, y = 0] = xy || []
   const visible = !!xy
-  const ref = useRef<THREE.Mesh | undefined>()
+  const ref = useRef<THREE.Group | undefined>()
   const { getCursorThreeX, getCursorThreeY } = useCursorThreePosition()
+
+  const x = xy?.[0]
+  const y = xy?.[1]
 
   const onPointChange = usePerfectCursor(
     useCallback(
@@ -50,6 +53,7 @@ export const OtherCursor = ({
         if (!ref.current) {
           return
         }
+
         ref.current.position.x = getCursorThreeX(x)
         ref.current.position.y = getCursorThreeY(y)
       },
@@ -58,11 +62,11 @@ export const OtherCursor = ({
   )
 
   useEffect(() => {
-    if (!visible) {
+    if (!visible || isNil(x) || isNil(y)) {
       return
     }
     onPointChange([x, y])
-  }, [x, y, onPointChange, visible])
+  }, [id, x, y, onPointChange, visible])
 
   return <BaseCursor {...restProps} ref={ref} visible={visible} />
 }
